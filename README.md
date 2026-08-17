@@ -58,7 +58,7 @@ Click the image below to watch the complete V2 demonstration:
 
 <p align="center">
   <a href="https://youtu.be/0CS7i-2NGbg">
-    <img src="docs/demo/alicia-demo-thumbnail.png" alt="Watch Alicia V2 Demo" width="900">
+    <img src="https://raw.githubusercontent.com/hetshahAI/digital-human-v2/master/docs/demo/alicia-demo-thumbnail.png" alt="Watch Alicia V2 Demo" width="900">
   </a>
 </p>
 
