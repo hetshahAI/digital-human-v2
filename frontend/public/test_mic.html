@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVIDIA Streaming ASR Test</title>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #1a1a1a; color: #fff; padding: 2rem; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .controls { margin-bottom: 2rem; display: flex; gap: 1rem; }
+        button {
+            padding: 0.75rem 1.5rem; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-start { background-color: #76b900; color: #000; }
+        .btn-start:hover { background-color: #8ce600; }
+        .btn-stop { background-color: #cc0000; color: #fff; }
+        .btn-stop:hover { background-color: #ff1a1a; }
+        .transcript-box {
+            background-color: #2d2d2d; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem;
+            min-height: 100px; border: 1px solid #404040;
+        }
+        .label { font-size: 0.8rem; color: #888; text-transform: uppercase; margin-bottom: 0.5rem; }
+        #partial { color: #aaa; font-style: italic; }
+        #final { color: #fff; font-size: 1.2rem; }
+        .status { margin-top: 1rem; font-size: 0.9rem; color: #aaa; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>NVIDIA Riva ASR Streaming</h2>
+        
+        <div class="controls">
+            <button class="btn-start" id="btn-start">Start Microphone</button>
+            <button class="btn-stop" id="btn-stop" disabled>Stop Microphone</button>
+        </div>
+
+        <div class="transcript-box">
+            <div class="label">Partial Transcript</div>
+            <div id="partial">Waiting for speech...</div>
+        </div>
+
+        <div class="transcript-box">
+            <div class="label">Final Transcript</div>
+            <div id="final"></div>
+        </div>
+        
+        <div class="status" id="status">Disconnected</div>
+    </div>
+
+    <script>
+        let ws;
+        let audioContext;
+        let mediaStream;
+        let scriptProcessor;
+
+        const btnStart = document.getElementById('btn-start');
+        const btnStop = document.getElementById('btn-stop');
+        const partialEl = document.getElementById('partial');
+        const finalEl = document.getElementById('final');
+        const statusEl = document.getElementById('status');
+
+        btnStart.addEventListener('click', startRecording);
+        btnStop.addEventListener('click', stopRecording);
+
+        function floatTo16BitPCM(output, offset, input) {
+            for (let i = 0; i < input.length; i++, offset += 2) {
+                let s = Math.max(-1, Math.min(1, input[i]));
+                output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+            }
+        }
+
+        async function startRecording() {
+            try {
+                // Connect WebSocket
+                ws = new WebSocket('ws://localhost:8000/ws/asr');
+                ws.binaryType = 'arraybuffer';
+                
+                ws.onopen = () => {
+                    statusEl.innerText = "WebSocket connected. Starting microphone...";
+                };
+
+                ws.onmessage = (event) => {
+                    try {
+                        const packet = JSON.parse(event.data);
+                        if (packet.packet_type === "asr") {
+                            if (packet.is_final) {
+                                finalEl.innerText += " " + packet.payload;
+                                partialEl.innerText = "";
+                            } else {
+                                partialEl.innerText = packet.payload;
+                            }
+                        } else if (packet.packet_type === "system") {
+                            console.log("System message:", packet.payload);
+                        }
+                    } catch (e) {
+                        console.error("Error parsing message", e);
+                    }
+                };
+
+                ws.onerror = (error) => {
+                    statusEl.innerText = "WebSocket error.";
+                    console.error("WebSocket error:", error);
+                    stopRecording();
+                };
+
+                ws.onclose = () => {
+                    statusEl.innerText = "WebSocket closed.";
+                    stopRecording();
+                };
+
+                // Request microphone
+                mediaStream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        channelCount: 1,
+                        echoCancellation: true,
+                        noiseSuppression: true
+                    } 
+                });
+
+                // NVIDIA Riva expects 16kHz
+                audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+                const source = audioContext.createMediaStreamSource(mediaStream);
+                
+                // Use ScriptProcessorNode to get raw audio buffers
+                scriptProcessor = audioContext.createScriptProcessor(4096, 1, 1);
+                
+                scriptProcessor.onaudioprocess = (e) => {
+                    if (!ws || ws.readyState !== WebSocket.OPEN) return;
+                    
+                    const inputData = e.inputBuffer.getChannelData(0);
+                    const buffer = new ArrayBuffer(inputData.length * 2);
+                    const view = new DataView(buffer);
+                    floatTo16BitPCM(view, 0, inputData);
+                    
+                    ws.send(buffer);
+                };
+
+                source.connect(scriptProcessor);
+                scriptProcessor.connect(audioContext.destination);
+
+                btnStart.disabled = true;
+                btnStop.disabled = false;
+                statusEl.innerText = "Listening...";
+                
+            } catch (err) {
+                console.error("Failed to start:", err);
+                statusEl.innerText = "Error: " + err.message;
+            }
+        }
+
+        function stopRecording() {
+            if (scriptProcessor) {
+                scriptProcessor.disconnect();
+                scriptProcessor = null;
+            }
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+                mediaStream = null;
+            }
+            if (audioContext) {
+                audioContext.close();
+                audioContext = null;
+            }
+            if (ws) {
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.close();
+                }
+                ws = null;
+            }
+            btnStart.disabled = false;
+            btnStop.disabled = true;
+            statusEl.innerText = "Stopped.";
+        }
+    </script>
+</body>
+</html>

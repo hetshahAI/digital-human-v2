@@ -1,0 +1,74 @@
+# Node / Frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+.npm/
+
+# Python / Backend
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.env
+.venv
+venv/
+ENV/
+
+# Temporary / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.log
+.claude/
+
+# Ensure safe secrets structure
+!.env.example
+backend/logs/
+backend/data/
+
+# Safety boundaries
+.env
+.env.*
+!.env.example
+
+# Local diagnostic
+logs/
+backend/logs/
+backend/data/
+backend/backend/logs/
+
+# Audio
+*.wav
+*.mp3
+*.ogg
+
+# Local modeling
+neurosync_core/
+
+# Source gen/patch files
+frontend/src/patch_*.cjs
+frontend/src/patch_*.py
+frontend/src/update_*.cjs
+
