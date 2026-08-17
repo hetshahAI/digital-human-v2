@@ -48,23 +48,7 @@ The system combines:
 
 The result is a complete **voice → intelligence → speech → animation → digital human** pipeline running in real time.
 
----
 
-# 🎬 Demo
-
-### Alicia — AI Executive Receptionist
-
-Click the image below to watch the complete V2 demonstration:
-
-<p align="center">
-  <a href="https://youtu.be/0CS7i-2NGbg">
-    <img src="https://img.youtube.com/vi/0CS7i-2NGbg/maxresdefault.jpg" alt="Watch Alicia V2 Demo" width="900">
-  </a>
-</p>
-
-**▶️ [Watch the full Alicia V2 demonstration on YouTube](https://youtu.be/0CS7i-2NGbg)**
-
-Alicia is currently presented as an **AI Executive Receptionist** operating in a virtual Dubai DIFC environment.
 
 ---
 
