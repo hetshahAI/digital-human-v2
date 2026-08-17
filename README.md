@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://youtu.be/0CS7i-2NGbg">
-    <img src="docs/demo/alicia-demo-thumbnail.png" alt="Alicia AI Digital Human Demo" width="900">
+    <img src="https://img.youtube.com/vi/0CS7i-2NGbg/maxresdefault.jpg" alt="Alicia AI Digital Human Demo" width="900">
   </a>
 </p>
 
@@ -58,7 +58,7 @@ Click the image below to watch the complete V2 demonstration:
 
 <p align="center">
   <a href="https://youtu.be/0CS7i-2NGbg">
-    <img src="https://raw.githubusercontent.com/hetshahAI/digital-human-v2/master/docs/demo/alicia-demo-thumbnail.png" alt="Watch Alicia V2 Demo" width="900">
+    <img src="https://img.youtube.com/vi/0CS7i-2NGbg/maxresdefault.jpg" alt="Watch Alicia V2 Demo" width="900">
   </a>
 </p>
 
